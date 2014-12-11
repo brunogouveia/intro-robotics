@@ -61,9 +61,20 @@ bool BaxterController::moveArm(Arm arm, double x, double y, double z)
 
 	} else
 	{
-		//do nothing
+		poseStamped = rightArmGroup.getCurrentPose("right_gripper");
+		cout << poseStamped.pose << endl;
+		poseStamped.pose.position.x += x;
+		poseStamped.pose.position.y += y;
+		poseStamped.pose.position.z += z;
+		cout << poseStamped.pose << endl;
+
+		poseStamped.header.seq++;
+		poseStamped.header.stamp = ros::Time::now();
+
+		rightArmGroup.setJointValueTarget(poseStamped.pose, "right_gripper");
+		rightArmGroup.move();
 	}
-	ros::Duration(1.0).sleep();
+	ros::Duration(0.5).sleep();
 	return true;
 }
 

@@ -3,7 +3,7 @@
 #include <fstream>
 #include <string>
 
-BaxterController * bcPtr;
+boost::shared_ptr<BaxterController> bcPtr;
 
 
 void callBack(const body_msgs::Hand::ConstPtr hand);
@@ -36,7 +36,7 @@ int main(int argc, char **argv)
 	ros::NodeHandle n;
 
 	BaxterController bc;
-	bcPtr = &bc;
+	bcPtr = boost::shared_ptr<BaxterController>(&bc);
 	ros::Subscriber sub;
 
 	/*
@@ -68,13 +68,13 @@ int main(int argc, char **argv)
 		// sub = n.subscribe("/hand1", 1, callBack);
 	}
 
-	body_msgs::Hand hand;
+	boost::shared_ptr<body_msgs::Hand> hand(new body_msgs::Hand());
 
-	hand.id = 0;
-	hand.position.x = 0.895556;
-	hand.position.y = 0.292756;
-	hand.position.z = -0.00392263;
-	callBack(boost::shared_ptr<body_msgs::Hand const>(&hand));
+	hand->id = 0;
+	hand->position.x = 0.895556;
+	hand->position.y = 0.292756;
+	hand->position.z = -0.00392263;
+	callBack(hand);
 
 
 
@@ -114,6 +114,8 @@ void callBack(const body_msgs::Hand::ConstPtr hand)
 
 		lastHandId = hand->id;
 		ROS_INFO("Going back to original position");
+		bcPtr->setArmOriginalPosition(LEFT_ARM);
+		bcPtr->setArmOriginalPosition(RIGHT_ARM);
 	}
 }
 
