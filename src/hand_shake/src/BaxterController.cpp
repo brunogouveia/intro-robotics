@@ -41,17 +41,45 @@ bool BaxterController::setArmOriginalPosition(Arm arm)
 	setJoints(arm, joints);
 }
 
+bool BaxterController::moveArm(Arm arm, double x, double y, double z)
+{
+	geometry_msgs::PoseStamped poseStamped;
+	if (arm)
+	{
+		poseStamped = leftArmGroup.getCurrentPose("left_gripper");
+		cout << poseStamped.pose << endl;
+		poseStamped.pose.position.x += x;
+		poseStamped.pose.position.y += y;
+		poseStamped.pose.position.z += z;
+		cout << poseStamped.pose << endl;
+
+		poseStamped.header.seq++;
+		poseStamped.header.stamp = ros::Time::now();
+
+		leftArmGroup.setJointValueTarget(poseStamped.pose, "left_gripper");
+		leftArmGroup.move();
+
+	} else
+	{
+		//do nothing
+	}
+	ros::Duration(1.0).sleep();
+	return true;
+}
+
 bool BaxterController::setArm(Arm arm, Eigen::Vector4f & point)
 {
 	if (arm) //Left arm
 	{
 		leftArmGroup.setPositionTarget(point(0), point(1), point(2), "left_gripper");
-		return leftArmGroup.move();
+		leftArmGroup.move();
 	} else 
 	{
 		rightArmGroup.setPositionTarget(point(0), point(1), point(2), "right_gripper");
-		return rightArmGroup.move();
+		rightArmGroup.move();
 	}
+	ros::Duration(2.0).sleep();
+	return true;
 }
 
 bool BaxterController::setArm(Arm arm, double x, double y, double z)
@@ -59,12 +87,14 @@ bool BaxterController::setArm(Arm arm, double x, double y, double z)
 	if (arm) //Left arm
 	{
 		leftArmGroup.setPositionTarget(x, y, z, "left_gripper");
-		return leftArmGroup.move();
+		leftArmGroup.move();
 	} else
 	{
 		rightArmGroup.setPositionTarget(x, y, z, "right_gripper");
-		return rightArmGroup.move();
+		rightArmGroup.move();
 	}
+	ros::Duration(2.0).sleep();
+	return true;
 }
 
 bool BaxterController::setJoints(Arm arm, vector<double> & jointsValues)
@@ -81,7 +111,7 @@ bool BaxterController::setJoints(Arm arm, vector<double> & jointsValues)
 		}
 
 		leftArmGroup.setJointValueTarget(*curLeftArmState);
-		return leftArmGroup.move();
+		leftArmGroup.move();
 	} else
 	{
 		BOOST_FOREACH(JointInfo & jInfo, rightJoints)
@@ -91,8 +121,10 @@ bool BaxterController::setJoints(Arm arm, vector<double> & jointsValues)
 		}
 
 		rightArmGroup.setJointValueTarget(*curRightArmState);
-		return rightArmGroup.move();
+		rightArmGroup.move();
 	}
+	ros::Duration(2.0).sleep();
+	return true;
 }
 
 void BaxterController::printArmsState()

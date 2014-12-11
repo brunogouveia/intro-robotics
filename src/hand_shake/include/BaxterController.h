@@ -41,6 +41,7 @@
 
 #include <body_msgs/Hand.h>
 
+
 #define RIGHT_ARM	0
 #define LEFT_ARM	1
 typedef int Arm;
@@ -75,6 +76,8 @@ public:
 	~BaxterController();
 
 	bool setArmOriginalPosition(Arm arm);
+
+	bool moveArm(Arm arm, double x, double y, double z);
 
 	bool setArm(Arm arm, Eigen::Vector4f & point);
 	bool setArm(Arm arm, double x, double y, double z);

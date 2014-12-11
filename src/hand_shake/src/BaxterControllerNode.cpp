@@ -65,19 +65,30 @@ int main(int argc, char **argv)
 		testFile(argv[1]);
 	} else 
 	{
-		sub = n.subscribe("/hand1", 1, callBack);
+		// sub = n.subscribe("/hand1", 1, callBack);
 	}
 
-	vector<double> joints;
-	joints.push_back(-0.459);
-	joints.push_back(-0.102);
-	joints.push_back(1.8);
-	joints.push_back(1.7);
-	joints.push_back(0.9);
-	joints.push_back(0);
-	joints.push_back(0.2);
+	body_msgs::Hand hand;
 
-	bc.setJoints(LEFT_ARM, joints);
+	hand.id = 0;
+	hand.position.x = 0.895556;
+	hand.position.y = 0.292756;
+	hand.position.z = -0.00392263;
+	callBack(boost::shared_ptr<body_msgs::Hand const>(&hand));
+
+
+
+	// vector<double> joints;
+	// joints.push_back(-0.459);
+	// joints.push_back(-0.102);
+	// joints.push_back(1.8);
+	// joints.push_back(1.7);
+	// joints.push_back(0.9);
+	// joints.push_back(0);
+	// joints.push_back(0.2);
+
+	// bc.setJoints(LEFT_ARM, joints);
+	// cout<< "Terminou" << endl;
 
 
 	ros::waitForShutdown();
@@ -85,20 +96,25 @@ int main(int argc, char **argv)
 
 void callBack(const body_msgs::Hand::ConstPtr hand)
 {
-	ROS_INFO("Hand received - starting");
+	static int lastHandId = 0;
+	if (hand->id != lastHandId || lastHandId == 0)
+	{
+		ROS_INFO("Hand received - starting");
 
-	Eigen::Vector4f point2(hand->arm.x,hand->arm.y,hand->arm.z,1.0f);
-	bool r = bcPtr->setArm(LEFT_ARM, point2);
+		bool r = bcPtr->setArm(LEFT_ARM, hand->position.x,hand->position.y,hand->position.z);
 
-	point2(1) + 0.1;
-	bcPtr->setArm(LEFT_ARM, point2);
+		ROS_INFO("Hand received - First point");
+		bcPtr->moveArm(LEFT_ARM, 0, 0, 0.1);
 
-	point2(1) - 0.2;
-	bcPtr->setArm(LEFT_ARM, point2);
+		ROS_INFO("Hand received - Second point");
+		bcPtr->moveArm(LEFT_ARM, 0, 0, -0.2);
 
-	point2(1) + 0.1;
+		ROS_INFO("Hand received - Third point");
+		bcPtr->moveArm(LEFT_ARM, 0, 0, 0.1);
 
-	ROS_INFO("Going back to original position");
+		lastHandId = hand->id;
+		ROS_INFO("Going back to original position");
+	}
 }
 
 bool testFile(const char * fileName)

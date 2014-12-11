@@ -110,6 +110,7 @@ void HandDetector::pubMarker(Eigen::Vector4f & point) {
 
 void HandDetector::pclCallback(const pcl::PointCloud<pcl::PointXYZ>::ConstPtr ptr)
 {
+	static bool sendingHand = false;
 	PointCloud<PointXYZ> cloud = *ptr;
 	vector<PointCloud<PointXYZ> > initialclouds;
 	vector<Eigen::Vector4f> armCenter;
@@ -189,16 +190,23 @@ void HandDetector::pclCallback(const pcl::PointCloud<pcl::PointXYZ>::ConstPtr pt
 			pubMarker(centroid);
 			pointCloudPub.publish(cloudout);
 
-			//Publish hand
-			geometry_msgs::Point point;
-			point.x = centroid(2);
-			point.y = -centroid(0);
-			point.z = -centroid(1);
+			if (!sendingHand)
+			{
+				//Publish hand
+				geometry_msgs::Point point;
+				point.x = centroid(2);
+				point.y = -centroid(0);
+				point.z = -centroid(1);
 
-			hand.seq++;
-			hand.arm = point;
-			hand.stamp = ros::Time::now();
-			handPub.publish(hand);
+				hand.id++;
+				hand.position = point;
+				hand.stamp = ros::Time::now();
+				handPub.publish(hand);
+				sendingHand = true;
+			}
+		} else
+		{
+			sendingHand = false;
 		}
 	}
 }
