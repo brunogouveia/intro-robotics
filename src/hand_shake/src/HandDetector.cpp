@@ -191,9 +191,9 @@ void HandDetector::pclCallback(const pcl::PointCloud<pcl::PointXYZ>::ConstPtr pt
 
 			//Publish hand
 			geometry_msgs::Point point;
-			point.x = centroid(0);
-			point.y = centroid(1);
-			point.z = centroid(2);
+			point.x = centroid(2);
+			point.y = -centroid(0);
+			point.z = -centroid(1);
 
 			hand.seq++;
 			hand.arm = point;

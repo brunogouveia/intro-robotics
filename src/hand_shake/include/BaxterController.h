@@ -41,8 +41,8 @@
 
 #include <body_msgs/Hand.h>
 
-#define RIGHT_ARM	1
-#define LEFT_ARM	2
+#define RIGHT_ARM	0
+#define LEFT_ARM	1
 typedef int Arm;
 
 using namespace pcl;
@@ -64,17 +64,25 @@ class BaxterController
 private:
 	moveit::planning_interface::MoveGroup leftArmGroup;
 	moveit::planning_interface::MoveGroup rightArmGroup;
-	robot_state::RobotStatePtr curState;
+	robot_state::RobotStatePtr curLeftArmState;
+	robot_state::RobotStatePtr curRightArmState;
 
-	vector<JointInfo> joints;
+	vector<JointInfo> leftJoints;
+	vector<JointInfo> rightJoints;
 
 public:
 	BaxterController();
 	~BaxterController();
 
+	bool setArmOriginalPosition(Arm arm);
+
 	bool setArm(Arm arm, Eigen::Vector4f & point);
+	bool setArm(Arm arm, double x, double y, double z);
 	
-	bool setArm(Arm arm, vector<double> & joints);
+	bool setJoints(Arm arm, vector<double> & joints);
+
+	void printArmsState();
+	void updateStates();
 
 };
 

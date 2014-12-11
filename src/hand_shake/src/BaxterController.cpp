@@ -7,14 +7,24 @@ BaxterController::BaxterController() :
 	leftArmGroup("left_arm"),
 	rightArmGroup("right_arm")
 {
-	curState = leftArmGroup.getCurrentState();
+	updateStates();
 
 	//Construct joints vector
 	vector<string> jointsNames = leftArmGroup.getActiveJoints();
 	BOOST_FOREACH(string joint, jointsNames)
 	{
-		joints.push_back(JointInfo(joint, 0.0f));
+		leftJoints.push_back(JointInfo(joint, 0.0f));
 	}
+
+	jointsNames.clear();
+	jointsNames = rightArmGroup.getActiveJoints();
+	BOOST_FOREACH(string joint, jointsNames)
+	{
+		rightJoints.push_back(JointInfo(joint, 0.0f));
+	}
+
+	setArmOriginalPosition(LEFT_ARM);
+	setArmOriginalPosition(RIGHT_ARM);
 }
 
 BaxterController::~BaxterController()
@@ -22,23 +32,96 @@ BaxterController::~BaxterController()
 	// do nothing
 }
 
-bool BaxterController::setArm(Arm arm, Eigen::Vector4f & point)
+bool BaxterController::setArmOriginalPosition(Arm arm)
 {
-	//do nothing yet
-	leftArmGroup.setPositionTarget(point(0), point(1), point(2), "left_gripper");
-	leftArmGroup.move();
+	vector<double> joints;
+	for (int i = 0; i < 7; i++)
+		joints.push_back(0.0);
+
+	setJoints(arm, joints);
 }
 
-bool BaxterController::setArm(Arm arm, vector<double> & jointsValues)
+bool BaxterController::setArm(Arm arm, Eigen::Vector4f & point)
+{
+	if (arm) //Left arm
+	{
+		leftArmGroup.setPositionTarget(point(0), point(1), point(2), "left_gripper");
+		return leftArmGroup.move();
+	} else 
+	{
+		rightArmGroup.setPositionTarget(point(0), point(1), point(2), "right_gripper");
+		return rightArmGroup.move();
+	}
+}
+
+bool BaxterController::setArm(Arm arm, double x, double y, double z)
+{
+	if (arm) //Left arm
+	{
+		leftArmGroup.setPositionTarget(x, y, z, "left_gripper");
+		return leftArmGroup.move();
+	} else
+	{
+		rightArmGroup.setPositionTarget(x, y, z, "right_gripper");
+		return rightArmGroup.move();
+	}
+}
+
+bool BaxterController::setJoints(Arm arm, vector<double> & jointsValues)
 {
 	// Update values of each joint
 	int i = 0;
-	BOOST_FOREACH(JointInfo & jInfo, joints)
+
+	if (arm) // Left arm
 	{
-		jInfo.jointValue = jointsValues[i++];
-		curState->setJointPositions(jInfo.jointName, &(jInfo.jointValue)) ;
+		BOOST_FOREACH(JointInfo & jInfo, leftJoints)
+		{
+			jInfo.jointValue = jointsValues[i++];
+			curLeftArmState->setJointPositions(jInfo.jointName, &(jInfo.jointValue)) ;
+		}
+
+		leftArmGroup.setJointValueTarget(*curLeftArmState);
+		return leftArmGroup.move();
+	} else
+	{
+		BOOST_FOREACH(JointInfo & jInfo, rightJoints)
+		{
+			jInfo.jointValue = jointsValues[i++];
+			curRightArmState->setJointPositions(jInfo.jointName, &(jInfo.jointValue)) ;
+		}
+
+		rightArmGroup.setJointValueTarget(*curRightArmState);
+		return rightArmGroup.move();
+	}
+}
+
+void BaxterController::printArmsState()
+{
+	/* Update states */
+	updateStates();
+
+	/* Left arm */
+	cout << "Left arm state: " << endl;
+
+	vector<string> joints = leftArmGroup.getActiveJoints();
+	BOOST_FOREACH(std::string joint, joints)
+	{
+		std::cout << joint << ":\t" << curLeftArmState->getJointPositions(joint)[0] << std::endl;
 	}
 
-	leftArmGroup.setJointValueTarget(*curState);
-	leftArmGroup.move();
+	/* Right arm */
+	cout << "Right arm state: " << endl;
+
+	joints.clear();
+	joints = rightArmGroup.getActiveJoints();
+	BOOST_FOREACH(std::string joint, joints)
+	{
+		std::cout << joint << ":\t" << curRightArmState->getJointPositions(joint)[0] << std::endl;
+	}
+}
+
+void BaxterController::updateStates()
+{
+	curLeftArmState = leftArmGroup.getCurrentState();
+	curRightArmState = rightArmGroup.getCurrentState();
 }

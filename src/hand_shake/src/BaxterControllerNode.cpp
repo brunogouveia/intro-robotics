@@ -1,14 +1,13 @@
 #include <BaxterController.h>
-
+#include <iostream>
+#include <fstream>
+#include <string>
 
 BaxterController * bcPtr;
 
-void callBack(const body_msgs::Hand::ConstPtr hand)
-{
-	cout << "chegou" << endl;
-	Eigen::Vector4f point2(hand->arm.x,hand->arm.y,hand->arm.z,1.0f);
-	bcPtr->setArm(LEFT_ARM, point2);
-}
+
+void callBack(const body_msgs::Hand::ConstPtr hand);
+bool testFile(const char * fileName);
 
 /**
  * This tutorial demonstrates simple sending of messages over the ROS system.
@@ -38,9 +37,9 @@ int main(int argc, char **argv)
 
 	BaxterController bc;
 	bcPtr = &bc;
-	ros::Subscriber sub = n.subscribe("/hand1", 1, callBack);
+	ros::Subscriber sub;
 
-	/**
+	/*
 	 * The advertise() function is how you tell ROS that you want to
 	 * publish on a given topic name. This invokes a call to the ROS
 	 * master node, which keeps a registry of who is publishing and who
@@ -57,32 +56,69 @@ int main(int argc, char **argv)
 	 * than we can send them, the number here specifies how many messages to
 	 * buffer up before throwing some away.
 	 */
-	// camera_info_pub = n.advertise<sensor_msgs::CameraInfo>("camera_info", 1);
-	// image_pub = n.advertise<sensor_msgs::Image>("image_rect", 1);
+	 
+	 bc.printArmsState();
+	 // ros::sleep(3);
 
-	// ros::Subscriber camera_info_sub = n.subscribe("camera/depth/camera_info", 1, cameraCallback)
-	// ros::Subscriber image_sub = n.subscribe("camera/depth/image", 1, imageCallback);
-	
+	if (argc >= 2)
+	{
+		testFile(argv[1]);
+	} else 
+	{
+		sub = n.subscribe("/hand1", 1, callBack);
+	}
 
-	// vector<double> joints;
-	// joints.push_back(-0.459);
-	// joints.push_back(-0.102);
-	// joints.push_back(1.8);
-	// joints.push_back(1.7);
-	// joints.push_back(0.9);
-	// joints.push_back(0);
-	// joints.push_back(0.2);
+	vector<double> joints;
+	joints.push_back(-0.459);
+	joints.push_back(-0.102);
+	joints.push_back(1.8);
+	joints.push_back(1.7);
+	joints.push_back(0.9);
+	joints.push_back(0);
+	joints.push_back(0.2);
 
-	// bc.setArm(LEFT_ARM, joints);
+	bc.setJoints(LEFT_ARM, joints);
 
-	// while (ros::ok()) {
-	// 	cout << "Foi1" << endl;
-	// 	Eigen::Vector4f point(0.15932f,1.00063f,0.592107f,1.0f);
-	// 	bc.setArm(LEFT_ARM, point);
 
-	// 	Eigen::Vector4f point2(0.12932f,0.90063f,0.592107f,1.0f);
-	// 	bc.setArm(LEFT_ARM, point2);
-	// 	cout << "Foi2" << endl;
-	// }
 	ros::waitForShutdown();
+}
+
+void callBack(const body_msgs::Hand::ConstPtr hand)
+{
+	ROS_INFO("Hand received - starting");
+
+	Eigen::Vector4f point2(hand->arm.x,hand->arm.y,hand->arm.z,1.0f);
+	bool r = bcPtr->setArm(LEFT_ARM, point2);
+
+	point2(1) + 0.1;
+	bcPtr->setArm(LEFT_ARM, point2);
+
+	point2(1) - 0.2;
+	bcPtr->setArm(LEFT_ARM, point2);
+
+	point2(1) + 0.1;
+
+	ROS_INFO("Going back to original position");
+}
+
+bool testFile(const char * fileName)
+{
+	string line;
+	ifstream inputFile(fileName);
+
+	if (inputFile.is_open())
+	{
+		while (getline(inputFile, line))
+		{
+			float x,y,z;
+			sscanf(line.c_str(), "%f %f %f", &x, &y, &z);
+			cout << line.c_str() << endl;
+			cout << "Going to point: " << x << ", " << y << ", " << z << endl;
+			Eigen::Vector4f point(x, y, z,1.0f);
+			bcPtr->setArm(LEFT_ARM, point);
+		}
+	}
+	else
+		cout << "Unable to open file." << endl;
+
 }
