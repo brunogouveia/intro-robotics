@@ -77,11 +77,13 @@ public:
 
 	bool setArmOriginalPosition(Arm arm);
 
+	bool moveJoint(Arm arm, string joint, double value);
 	bool moveArm(Arm arm, double x, double y, double z);
 
 	bool setArm(Arm arm, Eigen::Vector4f & point);
 	bool setArm(Arm arm, double x, double y, double z);
 	
+	bool setJoint(Arm arm, string joint, double value);
 	bool setJoints(Arm arm, vector<double> & joints);
 
 	void printArmsState();

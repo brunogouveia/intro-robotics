@@ -22,7 +22,6 @@ find_package(catkin REQUIRED COMPONENTS
   moveit_core
   moveit_commander
   moveit_fake_controller_manager
-  moveit_ikfast
   moveit_msgs
   moveit_planners_ompl
   moveit_ros_move_group

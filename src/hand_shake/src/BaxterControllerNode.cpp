@@ -104,13 +104,16 @@ void callBack(const body_msgs::Hand::ConstPtr hand)
 		bool r = bcPtr->setArm(LEFT_ARM, hand->position.x,hand->position.y,hand->position.z);
 
 		ROS_INFO("Hand received - First point");
-		bcPtr->moveArm(LEFT_ARM, 0, 0, 0.1);
+		// bcPtr->moveArm(LEFT_ARM, 0, 0, 0.1);
+		bcPtr->moveJoint(LEFT_ARM, "w1", 0.2);
 
 		ROS_INFO("Hand received - Second point");
-		bcPtr->moveArm(LEFT_ARM, 0, 0, -0.2);
+		// bcPtr->moveArm(LEFT_ARM, 0, 0, -0.2);
+		bcPtr->moveJoint(LEFT_ARM, "w1", -0.4);
 
 		ROS_INFO("Hand received - Third point");
-		bcPtr->moveArm(LEFT_ARM, 0, 0, 0.1);
+		// bcPtr->moveArm(LEFT_ARM, 0, 0, 0.1);
+		bcPtr->moveJoint(LEFT_ARM, "w1", 0.2);
 
 		lastHandId = hand->id;
 		ROS_INFO("Going back to original position");

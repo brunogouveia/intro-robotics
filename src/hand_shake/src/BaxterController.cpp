@@ -41,6 +41,28 @@ bool BaxterController::setArmOriginalPosition(Arm arm)
 	setJoints(arm, joints);
 }
 
+bool BaxterController::moveJoint(Arm arm, string joint, double value)
+{
+	updateStates();
+	if (arm)
+	{
+		cout << "First value" << value << endl;
+		value += curLeftArmState->getJointPositions("left_" +joint)[0];
+		cout << "Second value" << value << " left_" +joint << endl;
+		curLeftArmState->setJointPositions("left_" + joint, &value);
+		leftArmGroup.setJointValueTarget(*curLeftArmState);
+		leftArmGroup.move();
+	} else
+	{
+		value += curLeftArmState->getJointPositions("right_" +joint)[0];
+		curRightArmState->setJointPositions("right_" +joint, &value);
+		leftArmGroup.setJointValueTarget(*curRightArmState);
+		rightArmGroup.move();
+	}
+	ros::Duration(3.0).sleep();
+	return true;
+}
+
 bool BaxterController::moveArm(Arm arm, double x, double y, double z)
 {
 	geometry_msgs::PoseStamped poseStamped;
@@ -105,6 +127,20 @@ bool BaxterController::setArm(Arm arm, double x, double y, double z)
 		rightArmGroup.move();
 	}
 	ros::Duration(2.0).sleep();
+	return true;
+}
+
+
+bool BaxterController::setJoint(Arm arm, string joint, double value)
+{
+	if (arm)
+	{
+		curLeftArmState->setJointPositions("left_" +joint, &value);
+	} else
+	{
+		curRightArmState->setJointPositions("right_" +joint, &value);
+	}
+	ros::Duration(3.0).sleep();
 	return true;
 }
 
