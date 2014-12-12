@@ -59,7 +59,9 @@ bool BaxterController::moveJoint(Arm arm, string joint, double value)
 		leftArmGroup.setJointValueTarget(*curRightArmState);
 		rightArmGroup.move();
 	}
+#ifdef DEBUG
 	ros::Duration(3.0).sleep();
+#endif
 	return true;
 }
 
@@ -96,7 +98,9 @@ bool BaxterController::moveArm(Arm arm, double x, double y, double z)
 		rightArmGroup.setJointValueTarget(poseStamped.pose, "right_gripper");
 		rightArmGroup.move();
 	}
+#ifdef DEBUG
 	ros::Duration(0.5).sleep();
+#endif
 	return true;
 }
 
@@ -111,7 +115,9 @@ bool BaxterController::setArm(Arm arm, Eigen::Vector4f & point)
 		rightArmGroup.setPositionTarget(point(0), point(1), point(2), "right_gripper");
 		rightArmGroup.move();
 	}
+#ifdef DEBUG
 	ros::Duration(2.0).sleep();
+#endif
 	return true;
 }
 
@@ -126,7 +132,9 @@ bool BaxterController::setArm(Arm arm, double x, double y, double z)
 		rightArmGroup.setPositionTarget(x, y, z, "right_gripper");
 		rightArmGroup.move();
 	}
+#ifdef DEBUG
 	ros::Duration(2.0).sleep();
+#endif
 	return true;
 }
 
@@ -140,7 +148,9 @@ bool BaxterController::setJoint(Arm arm, string joint, double value)
 	{
 		curRightArmState->setJointPositions("right_" +joint, &value);
 	}
+#ifdef DEBUG
 	ros::Duration(3.0).sleep();
+#endif
 	return true;
 }
 
@@ -170,7 +180,9 @@ bool BaxterController::setJoints(Arm arm, vector<double> & jointsValues)
 		rightArmGroup.setJointValueTarget(*curRightArmState);
 		rightArmGroup.move();
 	}
+#ifdef DEBUG
 	ros::Duration(2.0).sleep();
+#endif
 	return true;
 }
 

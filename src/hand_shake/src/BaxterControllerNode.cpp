@@ -6,6 +6,8 @@
 boost::shared_ptr<BaxterController> bcPtr;
 
 
+stack<Eigen::Vector4f> points;
+
 void callBack(const body_msgs::Hand::ConstPtr hand);
 bool testFile(const char * fileName);
 
@@ -65,17 +67,34 @@ int main(int argc, char **argv)
 		testFile(argv[1]);
 	} else 
 	{
-		// sub = n.subscribe("/hand1", 1, callBack);
+		sub = n.subscribe("/hand1", 1, callBack);
 	}
 
-	boost::shared_ptr<body_msgs::Hand> hand(new body_msgs::Hand());
+	// boost::shared_ptr<body_msgs::Hand> hand(new body_msgs::Hand());
 
-	hand->id = 0;
-	hand->position.x = 0.895556;
-	hand->position.y = 0.292756;
-	hand->position.z = -0.00392263;
-	callBack(hand);
+	// hand->id = 0;
+	// hand->position.x = 0.895556;
+	// hand->position.y = 0.292756;
+	// hand->position.z = -0.00392263;
+	// callBack(hand);
 
+	while (ros::ok())
+	{
+		if (points.size() > 0)
+		{
+			Eigen::Vector4f h = points.top(); 
+			bool r = bcPtr->setArm(RIGHT_ARM, h(0) + 0.15,h(1),h(2) + 0.15);
+			bcPtr->moveArm(RIGHT_ARM, 0, 0, 0.1);
+			bcPtr->setArm(RIGHT_ARM, 0, 0, -0.2);
+			bcPtr->setArm(RIGHT_ARM, 0, 0, 0.1);
+			ROS_INFO("Going back to original position");
+			bcPtr->setArmOriginalPosition(LEFT_ARM);
+			bcPtr->setArmOriginalPosition(RIGHT_ARM);
+
+			while(!points.empty())
+				points.pop();
+		}
+	}
 
 
 	// vector<double> joints;
@@ -97,28 +116,14 @@ int main(int argc, char **argv)
 void callBack(const body_msgs::Hand::ConstPtr hand)
 {
 	static int lastHandId = 0;
-	if (hand->id != lastHandId || lastHandId == 0)
+	if (lastHandId != hand->id || lastHandId == 0)
 	{
-		ROS_INFO("Hand received - starting");
+		Eigen::Vector4f newHand;
+		newHand(0) = hand->position.x;
+		newHand(1) = hand->position.y;
+		newHand(2) = hand->position.z;
 
-		bool r = bcPtr->setArm(LEFT_ARM, hand->position.x,hand->position.y,hand->position.z);
-
-		ROS_INFO("Hand received - First point");
-		// bcPtr->moveArm(LEFT_ARM, 0, 0, 0.1);
-		bcPtr->moveJoint(LEFT_ARM, "w1", 0.2);
-
-		ROS_INFO("Hand received - Second point");
-		// bcPtr->moveArm(LEFT_ARM, 0, 0, -0.2);
-		bcPtr->moveJoint(LEFT_ARM, "w1", -0.4);
-
-		ROS_INFO("Hand received - Third point");
-		// bcPtr->moveArm(LEFT_ARM, 0, 0, 0.1);
-		bcPtr->moveJoint(LEFT_ARM, "w1", 0.2);
-
-		lastHandId = hand->id;
-		ROS_INFO("Going back to original position");
-		bcPtr->setArmOriginalPosition(LEFT_ARM);
-		bcPtr->setArmOriginalPosition(RIGHT_ARM);
+		points.push(newHand);
 	}
 }
 

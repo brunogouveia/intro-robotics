@@ -41,6 +41,7 @@
 
 #include <body_msgs/Hand.h>
 
+#define DEBUG
 
 #define RIGHT_ARM	0
 #define LEFT_ARM	1
