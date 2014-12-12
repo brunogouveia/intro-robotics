@@ -35,6 +35,7 @@
 #include <sstream>
 
 #include <body_msgs/Hand.h>
+#include <Knn.h>
 
 #define LIST_SIZE 		20		//Number of points used to compute mean and variance
 #define MAX_VARIANCE 	0.0015f	//If variance is greate than that, its too noisy

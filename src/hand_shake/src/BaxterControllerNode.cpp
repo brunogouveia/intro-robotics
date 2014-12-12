@@ -3,9 +3,12 @@
 #include <fstream>
 #include <string>
 
+
+#define POSE
+// #define ROUTINE 
+
+
 boost::shared_ptr<BaxterController> bcPtr;
-
-
 stack<Eigen::Vector4f> points;
 
 void callBack(const body_msgs::Hand::ConstPtr hand);
@@ -59,7 +62,7 @@ int main(int argc, char **argv)
 	 * buffer up before throwing some away.
 	 */
 	 
-	 bc.printArmsState();
+	bc.printArmsState();
 	 // ros::sleep(3);
 
 	if (argc >= 2)
@@ -78,15 +81,28 @@ int main(int argc, char **argv)
 	// hand->position.z = -0.00392263;
 	// callBack(hand);
 
+	// Eigen::Vector4f example(0.595556f, -0.092756f, -0.00392263, 1.0f);
+	// points.push(example);
+
+
 	while (ros::ok())
 	{
 		if (points.size() > 0)
 		{
 			Eigen::Vector4f h = points.top(); 
-			bool r = bcPtr->setArm(RIGHT_ARM, h(0) + 0.15,h(1),h(2) + 0.15);
-			bcPtr->moveArm(RIGHT_ARM, 0, 0, 0.1);
-			bcPtr->setArm(RIGHT_ARM, 0, 0, -0.2);
-			bcPtr->setArm(RIGHT_ARM, 0, 0, 0.1);
+
+			Arm arm = LEFT_ARM;
+#ifdef POSE
+			bool r = bcPtr->setArmPose(arm, h(0) + 0.15,h(1),h(2) + 0.15);
+#else
+			bool r = bcPtr->setArm(arm, h(0) + 0.15,h(1),h(2) + 0.15);		
+#endif
+
+#ifdef ROUTINE
+			bcPtr->moveArm(arm, 0, 0, 0.1);
+			bcPtr->moveArm(arm, 0, 0, -0.2);
+			bcPtr->moveArm(arm, 0, 0, 0.1);
+#endif
 			ROS_INFO("Going back to original position");
 			bcPtr->setArmOriginalPosition(LEFT_ARM);
 			bcPtr->setArmOriginalPosition(RIGHT_ARM);
@@ -107,7 +123,6 @@ int main(int argc, char **argv)
 	// joints.push_back(0.2);
 
 	// bc.setJoints(LEFT_ARM, joints);
-	// cout<< "Terminou" << endl;
 
 
 	ros::waitForShutdown();

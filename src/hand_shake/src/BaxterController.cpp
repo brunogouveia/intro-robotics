@@ -139,6 +139,45 @@ bool BaxterController::setArm(Arm arm, double x, double y, double z)
 }
 
 
+bool BaxterController::setArmPose(Arm arm, double x, double y, double z)
+{
+	if (arm) //Left arm
+	{
+		geometry_msgs::Pose pose;
+		pose.position.x = x;
+		pose.position.y = y;
+		pose.position.z = z;
+
+		pose.orientation.x = -0.0133155;
+		pose.orientation.y = 0.909243;
+		pose.orientation.z = -0.343736;
+		pose.orientation.w = 0.234406;
+
+		leftArmGroup.setPoseTarget(pose, "left_gripper");
+		leftArmGroup.move();
+	} else
+	{
+		geometry_msgs::Pose pose;
+		pose.position.x = x;
+		pose.position.y = y;
+		pose.position.z = z;
+
+		pose.orientation.x = -0.0133155;
+		pose.orientation.y = -0.909243;
+		pose.orientation.z = -0.343736;
+		pose.orientation.w = -0.234406;
+
+		rightArmGroup.setPoseTarget(pose, "right_gripper");
+		rightArmGroup.move();
+
+	}
+#ifdef DEBUG
+	ros::Duration(2.0).sleep();
+#endif
+	return true;
+}
+
+
 bool BaxterController::setJoint(Arm arm, string joint, double value)
 {
 	if (arm)

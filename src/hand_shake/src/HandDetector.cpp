@@ -46,16 +46,12 @@ bool HandDetector::isHand(Eigen::Vector4f & handCenter)
 	var /= LIST_SIZE;
 	Eigen::Vector3f v(var(0), var(1), var(2));
 
-	// cout << "sum\t" << " " << sum << endl;
-	// cout << "mean\t" << " " << mean << endl;
-	// cout << "var\t" << " " << var << endl;
 	cout << v.norm() << endl;
 	return (v.norm() < params.maxVariance);
 }
 
 void HandDetector::getSubCloud(PointCloud<PointXYZ> & cloudin, vector<int> & inds, PointCloud<PointXYZ> & cloudout) {
 	pcl::ExtractIndices<PointXYZ> extract;
-	// Extract the inliers
 	extract.setInputCloud (cloudin.makeShared());
 	extract.setIndices (boost::make_shared<vector<int> > (inds));
 	extract.setNegative (false);
@@ -113,27 +109,28 @@ void HandDetector::pclCallback(const pcl::PointCloud<pcl::PointXYZ>::ConstPtr pt
 	static bool sendingHand = false;
 	PointCloud<PointXYZ> cloud = *ptr;
 	vector<PointCloud<PointXYZ> > initialclouds;
-	vector<Eigen::Vector4f> armCenter;
 	vector<int> inds3(cloud.size(),1);
 
 	//Find points near to camera
-	PointXYZ camera(0,0,0);
+	Eigen::Vector4f camera(0.0f,0.0f,0.0f,1.0f);
 	vector<int> inds;
 	vector<float> distances;
 
-	NNN(cloud, camera, inds, distances, 1.0f);
+	// NNN(cloud, camera, inds, distances, 1.0f);
+	Eigen::Vector4f closestPoint = Knn::pointsInBallWithClosest(cloud,camera, 1.0f, inds);
 	
-	int index=0; double smallestdist;
-	for(uint i=0; i < distances.size(); ++i){
-		if(distances[i] < smallestdist || i == 0 ){
-			index = inds[i];
-			smallestdist = distances[i];
-		}
-	}
-	smallestdist = sqrt(smallestdist);
-	PointXYZ closestPoint = cloud.points[index];
+	// int index=0; double smallestdist;
+	// for(uint i=0; i < distances.size(); ++i){
+	// 	if(distances[i] < smallestdist || i == 0 ){
+	// 		index = inds[i];
+	// 		smallestdist = distances[i];
+	// 	}
+	// }
+	// smallestdist = sqrt(smallestdist);
+	// PointXYZ closestPoint = cloud.points[index];
 
-	NNN(cloud, closestPoint, inds, .2);
+	// NNN(cloud, closestPoint, inds, .2);
+	Knn::pointsInBall(cloud, closestPoint, 0.2, inds);
 
 
 	//if there is nothing near that point, we're probably seeing noise.  just give up
@@ -143,25 +140,16 @@ void HandDetector::pclCallback(const pcl::PointCloud<pcl::PointXYZ>::ConstPtr pt
 	}
 
 	Eigen::Vector4f centroid;
-	PointXYZ centroidPoint;
+	// PointXYZ centroidPoint;
 
 	compute3DCentroid(cloud, inds, centroid);
-	centroidPoint.x = centroid(0);
-	centroidPoint.y = centroid(1)-.02;
-	centroidPoint.z = centroid(2);
+	centroid(1) -= 0.02;
+	// centroidPoint.x = centroid(0);
+	// centroidPoint.y = centroid(1)-.02;
+	// centroidPoint.z = centroid(2);
 
-	NNN(cloud, centroidPoint, inds, .1);
-
-	// //in the middle of everything, locate where the arms is:
-	// std::vector<int> temp;
-	// NNN(cloud,centroidPoint,temp, .15);
-	// //finding the arms is really reliable. we'll just throw out anytime when we can't find it.
-	// if(!findNearbyPts(cloud,temp,centroid))
-	// 	return;
-
-	// pcl::compute3DCentroid(cloud,inds,centroid);
-	// centroidPoint.x=centroid(0); centroidPoint.y=centroid(1)-.01; centroidPoint.z=centroid(2);
-	// NNN(cloud,centroidPoint,inds, .1);
+	// NNN(cloud, centroidPoint, inds, .1);
+	Knn::pointsInBall(cloud, centroid, 0.1, inds);
 
 	PointCloud<PointXYZ> cloudout;
 	getSubCloud(cloud,inds,cloudout);
@@ -183,8 +171,8 @@ void HandDetector::pclCallback(const pcl::PointCloud<pcl::PointXYZ>::ConstPtr pt
 	// 	return;
 	// }
 
-	// cout << centroid(0) << " " << centroid(1) << " " << centroid(2) << endl;
-	// cout << inds.size() << endl;
+	
+
 	if (inds.size() > 1000) {
 		if (isHand(centroid)) {
 			pubMarker(centroid);

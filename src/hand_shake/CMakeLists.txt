@@ -124,7 +124,7 @@ include_directories(
 ## Declare a cpp executable
 add_executable(Teste src/Teste.cpp)
 # add_executable(HandDetection src/HandDetection.cpp)
-add_executable(HandDetectionPcl src/HandDetectionPcl.cpp src/HandDetector.cpp)
+add_executable(HandDetectionPcl src/HandDetectionPcl.cpp src/HandDetector.cpp src/Knn.cpp)
 add_executable(BaxterControllerNode src/BaxterControllerNode.cpp src/BaxterController.cpp)
 
 ## Add cmake target dependencies of the executable/library

@@ -40,8 +40,9 @@
 #include <sstream>
 
 #include <body_msgs/Hand.h>
+#include <Eigen/Geometry>
 
-#define DEBUG
+#define DEBUG 1
 
 #define RIGHT_ARM	0
 #define LEFT_ARM	1
@@ -83,6 +84,7 @@ public:
 
 	bool setArm(Arm arm, Eigen::Vector4f & point);
 	bool setArm(Arm arm, double x, double y, double z);
+	bool setArmPose(Arm arm, double x, double y, double z);
 	
 	bool setJoint(Arm arm, string joint, double value);
 	bool setJoints(Arm arm, vector<double> & joints);
